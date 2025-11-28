@@ -91,5 +91,59 @@ async function logoutUser(req, res) {
     }
 }
 
+async function getUserAddresses(req, res) {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId).select('address');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        return res.status(200).json({ message: 'User addresses fetched successfully', addresses: user.address });
+    } catch (error) {
+        console.error('Error fetching user addresses:', error);
+        res.status(500).json({ message: 'Error fetching user addresses' });
+    }
+}
 
-module.exports = { register, login, getCurrentUser, logoutUser };
+async function addUserAddress(req, res) {
+    try {
+        const userId = req.user.id;
+        const { street, city, state, country, zip, isDefault } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.address.push({ street, city, state, country, zip, isDefault });
+        await user.save();
+
+        return res.status(200).json({ message: 'Address added successfully' });
+    } catch (error) {
+        console.error('Error adding user address:', error);
+        res.status(500).json({ message: 'Error adding user address' });
+    }
+}
+
+async function deleteUserAddresses(req, res) {
+    try {
+        const userId = req.user.id;
+        const { addressIds } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.address = user.address.filter(address => !addressIds.includes(address._id.toString()));
+        await user.save();
+
+        return res.status(200).json({ message: 'Addresses deleted successfully', addresses: user.address });
+    } catch (error) {
+        console.error('Error deleting user addresses:', error);
+        res.status(500).json({ message: 'Error deleting user addresses' });
+    }
+}
+
+
+module.exports = { register, login, getCurrentUser, logoutUser, getUserAddresses, addUserAddress, deleteUserAddresses };

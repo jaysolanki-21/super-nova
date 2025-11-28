@@ -45,4 +45,13 @@ function runValidation(req, res, next) {
   next();
 }
 
-module.exports = { registerValidation, runValidation, loginValidation };
+const addUserAddressValidation = [
+  body('street').isString().withMessage('Street is required').notEmpty().withMessage('Street cannot be empty'),
+  body('city').isString().withMessage('City is required').notEmpty().withMessage('City cannot be empty'),
+  body('state').isString().withMessage('State is required').notEmpty().withMessage('State cannot be empty'),
+  body('country').isString().withMessage('Country is required').notEmpty().withMessage('Country cannot be empty'),
+  body('zip').isString().withMessage('Zip code is required').notEmpty().withMessage('Zip code cannot be empty'),
+  body('isDefault').optional().isBoolean().withMessage('isDefault must be a boolean'),
+];
+
+module.exports = { registerValidation, runValidation, loginValidation, addUserAddressValidation };
