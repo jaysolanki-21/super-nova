@@ -5,7 +5,7 @@ const redis = require('../db/redis');
 
 async function register(req, res) {
     try {
-        const { username, email, password, fullName: { firstName, lastName } } = req.body;
+        const { username, email, password, fullName: { firstName, lastName }, role } = req.body;
         const exists = await User.findOne({ $or: [{ username }, { email }] });
         if (exists) {
             return res.status(409).json({ message: 'User already exists' });
@@ -17,12 +17,13 @@ async function register(req, res) {
             username,
             email,
             password: hashed,
-            fullNanme: { firstName, lastName }
+            fullName: { firstName, lastName },
+            role: role || 'user'
         });
 
         await newUser.save();
         const token = jwt.sign({ id: newUser._id, username: newUser.username, role: newUser.role }, process.env.jwtSecret, { expiresIn: '1d' });
-        res.cookie('token', token, { httpOnly: true, MaxAge: 24 * 60 * 60 * 1000, secure: true });
+        res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000, secure: true });
         res.status(201).json({ message: 'User registered successfully', user: { username: newUser.username, email: newUser.email, fullName: newUser.fullNanme, role: newUser.role } });
     } catch (error) {
         console.error('Error registering user:', error);
