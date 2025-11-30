@@ -64,6 +64,7 @@ async function getCurrentUser(req, res) {
 
 async function logoutUser(req, res) {
     try {
+        console.log("Processing logout for user:", req.user?.username || 'unknown');
         const token = req.cookies?.token;
 
         if (token) {
